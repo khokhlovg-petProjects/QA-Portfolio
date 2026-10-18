@@ -1,5 +1,7 @@
 # QA portfolio
 
+[![tests](https://github.com/khokhlovg-petProjects/QA-portfolio/actions/workflows/tests.yml/badge.svg)](https://github.com/khokhlovg-petProjects/QA-portfolio/actions/workflows/tests.yml)
+
 A practice suite for [saucedemo.com](https://www.saucedemo.com) on Playwright and
 pytest with Allure reporting, plus unit tests for a few small helpers.
 
@@ -38,3 +40,6 @@ For the Allure report:
 pytest --alluredir=allure-results
 allure serve allure-results
 ```
+
+GitHub Actions runs the same suite on every push and keeps the Allure results as a
+build artifact, so a failure can be inspected without reproducing it locally.
