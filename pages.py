@@ -1,38 +1,71 @@
+import allure
+
+from config import BASE_URL
+
+
 class LoginPage:
     def __init__(self, page):
-        # TODO: сохрани page как атрибут self (вспомни call_oop.py — та же идея)
         self.page = page
-        pass
 
     def open(self):
-        # TODO: перейди на https://www.saucedemo.com/, используя self.page.goto(...)
-        self.page.goto("https://www.saucedemo.com/")
-        pass
+        self.page.goto(BASE_URL)
 
+    @allure.step("Войти как {username}")
     def login(self, username: str, password: str):
-        # TODO: используя self.page.locator(...), найди поля username/password,
-        # заполни их переданными username/password, и кликни кнопку логина
-        # (локаторы у тебя уже есть в test_saucedemo_smoke.py — просто перенеси их сюда)
         self.page.locator("#user-name").fill(username)
         self.page.locator("#password").fill(password)
         self.page.locator("#login-button").click()
-        pass
+
 
 class InventoryPage:
     def __init__(self, page):
-        # TODO: сохрани page как атрибут self (третий раз этот же паттерн — должно быть уже привычно)
         self.page = page
-        pass
 
-    def add_item_to_cart(self, item_test_id: str):
-        # TODO: используя self.page.locator(...), найди кнопку "Add to cart" по data-test атрибуту.
-        # Атрибут передаётся параметром item_test_id (например, "add-to-cart-sauce-labs-backpack"),
-        # а не захардкожен внутри метода — собери селектор через f-строку, используя этот параметр
+    def click_by_test_id(self, item_test_id: str):
         self.page.locator(f"[data-test='{item_test_id}']").click()
-        pass
 
-    def get_cart_badge_count(self) -> str:
-        # TODO: найди бейдж корзины (селектор ".shopping_cart_badge")
-        # и верни (return) его текст, а не просто прочитай его
-        return self.page.locator(".shopping_cart_badge").inner_text()
-        pass
+    @allure.step("Добавить товар в корзину")
+    def add_item_to_cart(self, item_test_id: str):
+        self.click_by_test_id(item_test_id)
+
+    def get_cart_badge_count(self) -> int:
+        # Пустую корзину saucedemo показывает отсутствием элемента, а не нулём в нём.
+        badge = self.page.locator(".shopping_cart_badge")
+        if badge.count() == 0:
+            return 0
+        return int(badge.inner_text())
+
+    def go_into_cart(self, item_test_id: str):
+        self.click_by_test_id(item_test_id)
+
+    def delete_cart_element(self, item_test_id: str):
+        self.click_by_test_id(item_test_id)
+
+    def sort_custom_params(self, sort_value: str):
+        self.page.locator("[data-test='product-sort-container']").select_option(value=sort_value)
+
+    def check_all_prices(self) -> list[str]:
+        return self.page.locator("[data-test='inventory-item-price']").all_inner_texts()
+
+
+class BuyingProcess:
+    def __init__(self, page):
+        self.page = page
+
+    def find_and_click_checkout_button(self):
+        self.page.locator("[data-test='checkout']").click()
+
+    def fill_out_address_form(self, first_name: str, second_name: str, zip_code: str):
+        self.page.locator("[data-test='firstName']").fill(first_name)
+        self.page.locator("[data-test='lastName']").fill(second_name)
+        self.page.locator("[data-test='postalCode']").fill(zip_code)
+
+    def continue_button_click(self):
+        self.page.locator("[data-test='continue']").click()
+
+    @allure.step("Завершить оформление заказа")
+    def finish_button_click(self):
+        self.page.locator("[data-test='finish']").click()
+
+    def check_order_status(self) -> str:
+        return self.page.locator("[data-test='complete-header']").inner_text()
